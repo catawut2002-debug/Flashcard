@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="theme-color" content="#f5f4f0">
+<meta name="theme-color" id="theme-color-meta" content="#f5f4f0">
 <title>Vocab — 728 คำ</title>
 <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&family=Noto+Sans+Thai:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -33,7 +33,29 @@
   --font-en: 'Inter', sans-serif;
   --font-th: 'Noto Sans Thai', 'Inter', sans-serif;
 }
+
+html.dark {
+  --bg: #111110;
+  --surface: #1c1b19;
+  --surface2: #252420;
+  --border: #2e2c28;
+  --border-strong: #3d3b35;
+  --accent: #4f8ef7;
+  --text: #f0ede6;
+  --text-muted: #8c897f;
+  --text-light: #5a5850;
+  --noun: #5aa3e8;
+  --verb: #3dbf7a;
+  --adj: #e8864a;
+  --adv: #b07ff0;
+  --success: #3dbf7a;
+  --danger: #f26d6d;
+  --shadow: 0 2px 12px rgba(0,0,0,.3);
+  --shadow-card: 0 4px 24px rgba(0,0,0,.4);
+}
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html { transition: background .25s, color .25s; }
 
 html, body {
   height: 100%;
@@ -149,8 +171,8 @@ html, body {
   flex-shrink: 0;
   padding: 5px 13px;
   border-radius: 99px;
-  border: 1px solid var(--border);
-  background: var(--surface);
+  border: 1px solid var(--border-strong);
+  background: var(--surface2);
   font-size: .76rem;
   font-family: var(--font-th);
   color: var(--text-muted);
@@ -161,13 +183,13 @@ html, body {
   gap: 4px;
   transition: all .15s;
 }
-.chip.active-all   { background: var(--text); color: #fff; border-color: var(--text); }
-.chip.active-noun  { background: rgba(29,111,181,.1); color: var(--noun); border-color: var(--noun); }
-.chip.active-verb  { background: rgba(26,122,80,.1); color: var(--verb); border-color: var(--verb); }
-.chip.active-adj   { background: rgba(184,92,26,.1); color: var(--adj); border-color: var(--adj); }
-.chip.active-adv   { background: rgba(124,58,171,.1); color: var(--adv); border-color: var(--adv); }
-.chip.active-known { background: rgba(22,163,74,.1); color: var(--success); border-color: var(--success); }
-.chip.active-unknown { background: rgba(220,38,38,.1); color: var(--danger); border-color: var(--danger); }
+.chip.active-all   { background: var(--accent); color: #fff; border-color: var(--accent); }
+.chip.active-noun  { background: rgba(29,111,181,.15); color: var(--noun); border-color: var(--noun); }
+.chip.active-verb  { background: rgba(26,122,80,.15); color: var(--verb); border-color: var(--verb); }
+.chip.active-adj   { background: rgba(184,92,26,.15); color: var(--adj); border-color: var(--adj); }
+.chip.active-adv   { background: rgba(124,58,171,.15); color: var(--adv); border-color: var(--adv); }
+.chip.active-known { background: rgba(22,163,74,.15); color: var(--success); border-color: var(--success); }
+.chip.active-unknown { background: rgba(220,38,38,.15); color: var(--danger); border-color: var(--danger); }
 
 /* ── PROGRESS BAR ──────────────────────────── */
 .prog-bar-wrap {
@@ -201,18 +223,17 @@ html, body {
 .card-scene { width: 100%; perspective: 1000px; }
 .card-box {
   width: 100%;
-  aspect-ratio: 3/2;
+  min-height: 200px;
   position: relative;
   transform-style: preserve-3d;
   transition: transform .5s cubic-bezier(.4,0,.2,1);
   cursor: pointer;
   user-select: none;
 }
+/* height is set dynamically — front sets natural height, back mirrors it */
 .card-box.flipped { transform: rotateY(180deg); }
 
 .card-face {
-  position: absolute;
-  inset: 0;
   backface-visibility: hidden;
   border-radius: var(--radius);
   padding: 20px 24px;
@@ -220,8 +241,22 @@ html, body {
   flex-direction: column;
   box-shadow: var(--shadow-card);
 }
-.card-front { background: var(--surface); border: 1px solid var(--border); }
-.card-back  { background: #fafaf8; border: 1px solid var(--border); transform: rotateY(180deg); }
+/* front: normal flow, sets the box height */
+.card-front {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+/* back: absolute overlay matching front size, scrollable */
+.card-back {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  transform: rotateY(180deg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
 
 /* swipe animation */
 .card-box.swipe-left  { animation: swipeLeft .35s ease forwards; }
@@ -290,12 +325,12 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 .btn:active { transform: scale(.96); }
-.btn-known   { background: rgba(22,163,74,.1); color: var(--success); border: 1px solid rgba(22,163,74,.25); flex: 1; }
-.btn-unknown { background: rgba(220,38,38,.1); color: var(--danger); border: 1px solid rgba(220,38,38,.25); flex: 1; }
-.btn-flip    { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); flex: 1; }
-.btn-prev    { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); padding: 12px; width: 44px; }
-.btn-next    { background: var(--text); color: #fff; border: 1px solid transparent; flex: 1; font-weight: 600; }
-.btn-shuffle { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); padding: 12px; width: 44px; }
+.btn-known   { background: rgba(22,163,74,.12); color: var(--success); border: 1px solid rgba(22,163,74,.3); flex: 1; }
+.btn-unknown { background: rgba(220,38,38,.12); color: var(--danger); border: 1px solid rgba(220,38,38,.3); flex: 1; }
+.btn-flip    { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border-strong); flex: 1; }
+.btn-prev    { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border-strong); padding: 12px; width: 44px; }
+.btn-next    { background: var(--accent); color: #fff; border: 1px solid transparent; flex: 1; font-weight: 600; }
+.btn-shuffle { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border-strong); padding: 12px; width: 44px; }
 
 
 
@@ -329,8 +364,8 @@ html, body {
 .quiz-hint { font-size: .75rem; color: var(--text-light); font-family: var(--font-th); }
 .quiz-options { display: flex; flex-direction: column; gap: 9px; }
 .quiz-opt {
-  background: var(--surface);
-  border: 1px solid var(--border);
+  background: var(--surface2);
+  border: 1px solid var(--border-strong);
   border-radius: 12px;
   padding: 14px 16px;
   cursor: pointer;
@@ -339,7 +374,7 @@ html, body {
   color: var(--text);
   text-align: left;
   transition: all .15s;
-  box-shadow: 0 1px 3px rgba(0,0,0,.04);
+  box-shadow: 0 1px 3px rgba(0,0,0,.06);
 }
 .quiz-opt:active:not(.disabled) { transform: scale(.98); }
 .quiz-opt.correct { background: rgba(22,163,74,.1); border-color: var(--success); color: var(--success); }
@@ -484,7 +519,12 @@ html, body {
       <div class="screen-title">Vocab Flashcards</div>
       <div class="screen-sub">Frequently Used Vocabulary — 728 คำ</div>
     </div>
-    <div class="progress-pill">รู้แล้ว <strong id="kc">0</strong> · ยังไม่รู้ <strong id="uc">0</strong></div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <button id="theme-toggle" onclick="toggleTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-muted);font-family:var(--font-th);transition:all .15s" title="เปลี่ยน theme">
+        <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+      </button>
+      <div class="progress-pill">รู้แล้ว <strong id="kc">0</strong> · ยังไม่รู้ <strong id="uc">0</strong></div>
+    </div>
   </div>
 
   <div class="filter-row" id="fc-status-row">
@@ -896,6 +936,24 @@ function updateHeader() {
 function flipCard() {
   isFlipped = !isFlipped;
   document.getElementById('card-box').classList.toggle('flipped', isFlipped);
+  syncCardHeight();
+}
+
+function syncCardHeight() {
+  const box = document.getElementById('card-box');
+  const front = box.querySelector('.card-front');
+  const back  = box.querySelector('.card-back');
+  if (isFlipped) {
+    // measure back content height
+    back.style.position = 'relative';
+    back.style.inset = '';
+    const h = back.scrollHeight;
+    back.style.position = 'absolute';
+    back.style.inset = '0';
+    box.style.minHeight = Math.max(h, front.offsetHeight) + 'px';
+  } else {
+    box.style.minHeight = '';
+  }
 }
 
 function nextCard() {
@@ -1119,7 +1177,34 @@ function burst() {
   }
 }
 
+// ── Theme ──────────────────────────────────────
+const MOON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
+const SUN_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
+
+function applyTheme(dark) {
+  document.documentElement.classList.toggle('dark', dark);
+  const btn = document.getElementById('theme-toggle');
+  if (btn) btn.innerHTML = dark ? SUN_SVG : MOON_SVG;
+  const meta = document.getElementById('theme-color-meta');
+  if (meta) meta.content = dark ? '#111110' : '#f5f4f0';
+  try { localStorage.setItem('vocab_theme', dark ? 'dark' : 'light'); } catch(e) {}
+}
+
+function toggleTheme() {
+  const isDark = document.documentElement.classList.contains('dark');
+  applyTheme(!isDark);
+}
+
+function loadTheme() {
+  try {
+    const saved = localStorage.getItem('vocab_theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(saved ? saved === 'dark' : prefersDark);
+  } catch(e) { applyTheme(false); }
+}
+
 // ── Init ───────────────────────────────────────
+loadTheme();
 loadProgress();
 buildDeck();
 newQuiz();
