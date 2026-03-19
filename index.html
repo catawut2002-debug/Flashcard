@@ -279,9 +279,46 @@ html, body {
 .tag-adverb    { background: rgba(124,58,171,.1); color: var(--adv); }
 
 .card-counter { font-size: .68rem; color: var(--text-light); position: absolute; top: 16px; right: 20px; font-family: var(--font-en); }
-.card-word    { font-family: var(--font-display); font-size: clamp(2.2rem, 10vw, 3.2rem); color: var(--text); line-height: 1; letter-spacing: .02em; margin-bottom: 4px; }
+.card-word    { font-family: var(--font-en); font-size: clamp(2rem, 9vw, 2.8rem); color: var(--text); line-height: 1; letter-spacing: -.01em; margin-bottom: 4px; font-weight: 700; }
 .card-ipa     { font-family: var(--font-en); font-size: .85rem; color: var(--text-muted); font-style: italic; margin-bottom: 6px; min-height: 1.3em; }
 .card-hint    { font-size: .75rem; color: var(--text-light); margin-top: auto; font-family: var(--font-th); display: flex; align-items: center; gap: 4px; }
+
+.speak-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--surface2); border: 1px solid var(--border-strong);
+  border-radius: 99px; padding: 5px 12px; gap: 5px;
+  font-size: .74rem; font-family: var(--font-en); color: var(--text-muted);
+  cursor: pointer; margin-top: 6px; transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.speak-btn:active { transform: scale(.95); background: var(--accent); color: #fff; border-color: var(--accent); }
+.speak-btn.speaking { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.voice-toggle {
+  padding: 4px 11px; border-radius: 99px; border: 1px solid var(--border-strong);
+  background: var(--surface2); color: var(--text-muted); font-size: .72rem;
+  font-family: var(--font-th); cursor: pointer; transition: all .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.voice-toggle.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+.voice-toggle:active { transform: scale(.95); }
+
+.ctx-speak-btn {
+  flex-shrink: 0;
+  width: 26px; height: 26px;
+  border-radius: 99px;
+  border: 1px solid var(--border-strong);
+  background: var(--surface2);
+  color: var(--text-muted);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all .15s;
+  margin-top: 2px;
+  -webkit-tap-highlight-color: transparent;
+}
+.ctx-speak-btn:active, .ctx-speak-btn.speaking {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+  transform: scale(.92);
+}
 
 /* swipe hint overlay */
 .swipe-hint {
@@ -519,7 +556,9 @@ html, body {
       <div class="screen-title">Vocab Flashcards</div>
       <div class="screen-sub">Frequently Used Vocabulary — 728 คำ</div>
     </div>
-    <div style="display:flex;align-items:center;gap:10px">
+    <div style="display:flex;align-items:center;gap:7px">
+      <button class="voice-toggle active" id="vt-male" onclick="setVoiceGender('male',event)">♂ ชาย</button>
+      <button class="voice-toggle" id="vt-female" onclick="setVoiceGender('female',event)">♀ หญิง</button>
       <button id="theme-toggle" onclick="toggleTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-muted);font-family:var(--font-th);transition:all .15s" title="เปลี่ยน theme">
         <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
@@ -561,9 +600,14 @@ html, body {
             <span class="card-pos-tag" id="fc-pos">Noun</span>
             <div class="card-word" id="fc-word">Ability</div>
             <div class="card-ipa" id="fc-ipa">/əˈbɪlɪti/</div>
-            <div class="card-hint">
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-              แตะเพื่อดูความหมาย
+            <div class="card-hint" style="margin-top:auto;display:flex;align-items:center;justify-content:space-between">
+              <span style="display:flex;align-items:center;gap:4px">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                แตะเพื่อดูความหมาย
+              </span>
+              <button class="speak-btn" id="speak-btn" onclick="speakWord(event)" style="width:30px;height:30px;padding:0;justify-content:center;flex:none;border-radius:99px">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              </button>
             </div>
           </div>
           <!-- BACK -->
@@ -575,8 +619,18 @@ html, body {
             <div class="back-syn" id="fc-syn">capability, power, potential, facility</div>
             <div class="back-ex" id="fc-ex">I have confidence in the ability of the players.</div>
             <div class="back-ctx-lbl" style="font-size:.62rem;color:var(--text-light);text-transform:uppercase;letter-spacing:.1em;margin-top:10px;margin-bottom:4px;font-family:var(--font-en)">Context</div>
-            <div id="fc-ctx1" class="back-ex" style="margin-bottom:6px;border-color:var(--noun)"></div>
-            <div id="fc-ctx2" class="back-ex" style="border-color:var(--noun)"></div>
+            <div style="display:flex;align-items:flex-start;gap:6px;margin-bottom:6px">
+              <div id="fc-ctx1" class="back-ex" style="flex:1;border-color:var(--noun)"></div>
+              <button class="ctx-speak-btn" id="ctx-speak-1" onclick="speakText(document.getElementById('fc-ctx1').textContent,event)" title="ฟังเสียง">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              </button>
+            </div>
+            <div style="display:flex;align-items:flex-start;gap:6px">
+              <div id="fc-ctx2" class="back-ex" style="flex:1;border-color:var(--noun)"></div>
+              <button class="ctx-speak-btn" id="ctx-speak-2" onclick="speakText(document.getElementById('fc-ctx2').textContent,event)" title="ฟังเสียง">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -1177,6 +1231,91 @@ function burst() {
   }
 }
 
+// ── Text-to-Speech ─────────────────────────────
+let voiceGender = 'male';
+let voicesMale = [], voicesFemale = [], voicesLoaded = false;
+
+function loadVoices() {
+  const all = window.speechSynthesis.getVoices();
+  if (!all.length) return;
+  voicesLoaded = true;
+  const en = all.filter(v => v.lang.startsWith('en'));
+  // Heuristic: names containing 'male','man','david','mark','alex','fred','daniel' → male
+  // names containing 'female','woman','samantha','victoria','karen','zira','susan','fiona' → female
+  const maleHints   = /male|man|david|mark|alex|fred|daniel|arthur|aaron|ryan|james/i;
+  const femaleHints = /female|woman|samantha|victoria|karen|zira|susan|fiona|kate|siri|moira|tessa|veena|allison|ava/i;
+  voicesMale   = en.filter(v => maleHints.test(v.name));
+  voicesFemale = en.filter(v => femaleHints.test(v.name));
+  // fallback: split remaining by index
+  if (!voicesMale.length && !voicesFemale.length) {
+    voicesMale   = en.filter((_, i) => i % 2 === 0);
+    voicesFemale = en.filter((_, i) => i % 2 === 1);
+  }
+  if (!voicesMale.length)   voicesMale   = en.slice(0, 1);
+  if (!voicesFemale.length) voicesFemale = en.slice(-1);
+}
+
+if (window.speechSynthesis) {
+  window.speechSynthesis.onvoiceschanged = loadVoices;
+  loadVoices();
+}
+
+function setVoiceGender(g, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  voiceGender = g;
+  document.getElementById('vt-male').classList.toggle('active', g === 'male');
+  document.getElementById('vt-female').classList.toggle('active', g === 'female');
+  try { localStorage.setItem('vocab_voice', g); } catch(_) {}
+  speakWord(null);
+}
+
+function speakText(text, e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  if (!text || !text.trim() || !window.speechSynthesis) return;
+
+  if (!voicesLoaded) loadVoices();
+  window.speechSynthesis.cancel();
+
+  const utt = new SpeechSynthesisUtterance(text.trim());
+  utt.lang = 'en-US';
+  utt.rate = 0.82;
+  utt.pitch = voiceGender === 'female' ? 1.1 : 0.9;
+  const pool = voiceGender === 'female' ? voicesFemale : voicesMale;
+  if (pool.length) utt.voice = pool[0];
+
+  // find which button was clicked
+  const btn = e ? e.currentTarget : null;
+  if (btn) btn.classList.add('speaking');
+  utt.onend = () => { if (btn) btn.classList.remove('speaking'); };
+  utt.onerror = () => { if (btn) btn.classList.remove('speaking'); };
+
+  window.speechSynthesis.speak(utt);
+}
+
+function speakWord(e) {
+  if (e) { e.stopPropagation(); e.preventDefault(); }
+  const word = document.getElementById('fc-word').textContent;
+  if (!word || !window.speechSynthesis) return;
+
+  if (!voicesLoaded) loadVoices();
+  window.speechSynthesis.cancel();
+
+  const utt = new SpeechSynthesisUtterance(word);
+  utt.lang = 'en-US';
+  utt.rate = 0.85;
+  utt.pitch = voiceGender === 'female' ? 1.1 : 0.9;
+
+  const pool = voiceGender === 'female' ? voicesFemale : voicesMale;
+  if (pool.length) utt.voice = pool[0];
+
+  const btn = document.getElementById('speak-btn');
+  if (btn) btn.classList.add('speaking');
+  utt.onend = () => { if (btn) btn.classList.remove('speaking'); };
+  utt.onerror = () => { if (btn) btn.classList.remove('speaking'); };
+
+  window.speechSynthesis.speak(utt);
+}
+
 // ── Theme ──────────────────────────────────────
 const MOON_SVG = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`;
 const SUN_SVG  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>`;
@@ -1205,6 +1344,15 @@ function loadTheme() {
 
 // ── Init ───────────────────────────────────────
 loadTheme();
+// restore voice gender preference
+try {
+  const savedVoice = localStorage.getItem('vocab_voice');
+  if (savedVoice === 'female') {
+    voiceGender = 'female';
+    document.getElementById('vt-male').classList.remove('active');
+    document.getElementById('vt-female').classList.add('active');
+  }
+} catch(_) {}
 loadProgress();
 buildDeck();
 newQuiz();
