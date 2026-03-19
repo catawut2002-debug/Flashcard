@@ -554,12 +554,15 @@ html, body {
   <div class="screen-header">
     <div>
       <div class="screen-title">Vocab Flashcards</div>
-      <div class="screen-sub">Frequently Used Vocabulary — 728 คำ</div>
     </div>
     <div style="display:flex;align-items:center;gap:7px">
-      <button class="voice-toggle active" id="vt-male" onclick="setVoiceGender('male',event)">♂ ชาย</button>
-      <button class="voice-toggle" id="vt-female" onclick="setVoiceGender('female',event)">♀ หญิง</button>
-      <button id="theme-toggle" onclick="toggleTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:99px;padding:6px 10px;cursor:pointer;display:flex;align-items:center;gap:5px;font-size:.72rem;color:var(--text-muted);font-family:var(--font-th);transition:all .15s" title="เปลี่ยน theme">
+      <button class="voice-toggle active" id="vt-male" onclick="setVoiceGender('male',event)" title="เสียงชาย" style="width:32px;height:32px;padding:0;justify-content:center;border-radius:99px;font-size:.9rem">
+        ♂
+      </button>
+      <button class="voice-toggle" id="vt-female" onclick="setVoiceGender('female',event)" title="เสียงหญิง" style="width:32px;height:32px;padding:0;justify-content:center;border-radius:99px;font-size:.9rem">
+        ♀
+      </button>
+      <button id="theme-toggle" onclick="toggleTheme()" style="background:var(--surface2);border:1px solid var(--border);border-radius:99px;width:32px;height:32px;padding:0;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text-muted);transition:all .15s" title="เปลี่ยน theme">
         <svg id="theme-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
       </button>
       <div class="progress-pill">รู้แล้ว <strong id="kc">0</strong> · ยังไม่รู้ <strong id="uc">0</strong></div>
