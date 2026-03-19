@@ -2,7 +2,7 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="theme-color" content="#f5f4f0">
@@ -39,7 +39,7 @@ html, body {
   height: 100%;
   overflow: hidden;
   font-family: var(--font-th);
-  background: var(--bg);
+  background: var(--surface);
   color: var(--text);
 }
 
@@ -47,11 +47,12 @@ html, body {
 .screen {
   position: fixed;
   inset: 0;
-  bottom: var(--nav-h);
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 16px));
   display: none;
   flex-direction: column;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
+  background: var(--bg);
 }
 .screen.active { display: flex; }
 
@@ -59,13 +60,25 @@ html, body {
 .bottom-nav {
   position: fixed;
   bottom: 0; left: 0; right: 0;
-  height: var(--nav-h);
   background: var(--surface);
   border-top: 1px solid var(--border);
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   z-index: 100;
-  padding-bottom: env(safe-area-inset-bottom);
+  /* extend background all the way to physical screen bottom */
+  padding-bottom: env(safe-area-inset-bottom, 16px);
+  height: auto;
+  min-height: var(--nav-h);
+}
+/* fill the safe area gap with surface color */
+.bottom-nav::after {
+  content: '';
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  height: env(safe-area-inset-bottom, 16px);
+  background: var(--surface);
+  z-index: 99;
+  pointer-events: none;
 }
 .nav-btn {
   flex: 1;
@@ -81,7 +94,8 @@ html, body {
   font-size: .65rem;
   font-family: var(--font-th);
   transition: color .15s;
-  padding: 8px 0;
+  padding: 10px 0 8px;
+  min-height: var(--nav-h);
 }
 .nav-btn.active { color: var(--accent); }
 .nav-btn svg { display: block; }
@@ -283,14 +297,7 @@ html, body {
 .btn-next    { background: var(--text); color: #fff; border: 1px solid transparent; flex: 1; font-weight: 600; }
 .btn-shuffle { background: var(--surface); color: var(--text-muted); border: 1px solid var(--border); padding: 12px; width: 44px; }
 
-/* swipe instruction */
-.swipe-instruction {
-  text-align: center;
-  font-size: .68rem;
-  color: var(--text-light);
-  font-family: var(--font-th);
-  padding: 6px 20px 14px;
-}
+
 
 /* ══ SCREEN 2: QUIZ ════════════════════════════ */
 #screen-quiz {
@@ -444,15 +451,24 @@ html, body {
 
 /* Toast */
 .toast {
-  position: fixed; bottom: calc(var(--nav-h) + 16px); left: 50%;
-  transform: translateX(-50%) translateY(80px);
-  background: var(--text); border-radius: 10px; padding: 10px 20px;
-  font-size: .84rem; color: #fff; white-space: nowrap;
-  font-family: var(--font-th); z-index: 200;
+  position: fixed;
+  bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 16px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--text);
+  border-radius: 10px;
+  padding: 10px 20px;
+  font-size: .84rem;
+  color: #fff;
+  white-space: nowrap;
+  font-family: var(--font-th);
+  z-index: 200;
   box-shadow: 0 4px 20px rgba(0,0,0,.2);
-  transition: transform .3s ease;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .25s ease;
 }
-.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.show { opacity: 1; pointer-events: auto; }
 
 /* burst */
 @keyframes float-up { to { opacity: 0; transform: translateY(-70px) scale(.5) rotate(25deg); } }
@@ -471,18 +487,21 @@ html, body {
     <div class="progress-pill">รู้แล้ว <strong id="kc">0</strong> · ยังไม่รู้ <strong id="uc">0</strong></div>
   </div>
 
-  <div class="filter-row" id="fc-filter-row">
-    <button class="chip active-all" data-pos="All" onclick="setFilter('All','fc')">ทั้งหมด</button>
-    <button class="chip" data-pos="Noun" onclick="setFilter('Noun','fc')">Noun</button>
-    <button class="chip" data-pos="Verb" onclick="setFilter('Verb','fc')">Verb</button>
-    <button class="chip" data-pos="Adjective" onclick="setFilter('Adjective','fc')">Adjective</button>
-    <button class="chip" data-pos="Adverb" onclick="setFilter('Adverb','fc')">Adverb</button>
-    <button class="chip" data-pos="Known" onclick="setFilter('Known','fc')">
+  <div class="filter-row" id="fc-status-row">
+    <button class="chip active-all" data-val="All" onclick="setStatus('All','fc')">ทั้งหมด</button>
+    <button class="chip" data-val="Known" onclick="setStatus('Known','fc')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>รู้แล้ว
     </button>
-    <button class="chip" data-pos="Unknown" onclick="setFilter('Unknown','fc')">
+    <button class="chip" data-val="Unknown" onclick="setStatus('Unknown','fc')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>ยังไม่รู้
     </button>
+  </div>
+  <div class="filter-row" id="fc-pos-row" style="padding-top:0">
+    <button class="chip active-all" data-val="All" onclick="setPos('All','fc')">ทุกประเภท</button>
+    <button class="chip" data-val="Noun" onclick="setPos('Noun','fc')">Noun</button>
+    <button class="chip" data-val="Verb" onclick="setPos('Verb','fc')">Verb</button>
+    <button class="chip" data-val="Adjective" onclick="setPos('Adjective','fc')">Adjective</button>
+    <button class="chip" data-val="Adverb" onclick="setPos('Adverb','fc')">Adverb</button>
   </div>
 
   <div class="prog-bar-wrap">
@@ -519,9 +538,7 @@ html, body {
         </div>
       </div>
     </div>
-    <div class="swipe-instruction">
-      ← ปัดซ้าย = ยังไม่รู้ &nbsp;|&nbsp; ปัดขวา = รู้แล้ว →
-    </div>
+  
   </div>
 
   <div class="card-actions">
@@ -599,18 +616,21 @@ html, body {
       <div class="screen-sub" id="list-count-sub">728 คำ</div>
     </div>
   </div>
-  <div class="filter-row" id="l-filter-row">
-    <button class="chip active-all" data-pos="All" onclick="setFilter('All','l')">ทั้งหมด</button>
-    <button class="chip" data-pos="Noun" onclick="setFilter('Noun','l')">Noun</button>
-    <button class="chip" data-pos="Verb" onclick="setFilter('Verb','l')">Verb</button>
-    <button class="chip" data-pos="Adjective" onclick="setFilter('Adjective','l')">Adjective</button>
-    <button class="chip" data-pos="Adverb" onclick="setFilter('Adverb','l')">Adverb</button>
-    <button class="chip" data-pos="Known" onclick="setFilter('Known','l')">
+  <div class="filter-row" id="l-status-row">
+    <button class="chip active-all" data-val="All" onclick="setStatus('All','l')">ทั้งหมด</button>
+    <button class="chip" data-val="Known" onclick="setStatus('Known','l')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>รู้แล้ว
     </button>
-    <button class="chip" data-pos="Unknown" onclick="setFilter('Unknown','l')">
+    <button class="chip" data-val="Unknown" onclick="setStatus('Unknown','l')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>ยังไม่รู้
     </button>
+  </div>
+  <div class="filter-row" id="l-pos-row" style="padding-top:0">
+    <button class="chip active-all" data-val="All" onclick="setPos('All','l')">ทุกประเภท</button>
+    <button class="chip" data-val="Noun" onclick="setPos('Noun','l')">Noun</button>
+    <button class="chip" data-val="Verb" onclick="setPos('Verb','l')">Verb</button>
+    <button class="chip" data-val="Adjective" onclick="setPos('Adjective','l')">Adjective</button>
+    <button class="chip" data-val="Adverb" onclick="setPos('Adverb','l')">Adverb</button>
   </div>
   <div class="search-wrap">
     <input class="search-input" type="text" id="search-input" placeholder="ค้นหาคำศัพท์..." oninput="renderList()">
@@ -702,9 +722,11 @@ function clearProgress() {
 
 // ── State ──────────────────────────────────────
 let deck = [...VOCAB], currentIndex = 0, isFlipped = false;
-let filter = 'All';
-let qScore = 0, qTotal = 0, qWord = null, qAnswered = false;
-let lFilter = 'All';
+
+// 2D filter: status (All/Known/Unknown) × pos (All/Noun/Verb/Adjective/Adverb)
+let fcStatus = 'All', fcPos = 'All';
+let lStatus  = 'All', lPos  = 'All';
+let qScore = 0, qTotal = 0, qWord = null, qAnswered = false, qFilter = 'All';
 let currentScreen = 'card';
 
 const POS_COLORS = { Noun:'#1d6fb5', Verb:'#1a7a50', Adjective:'#b85c1a', Adverb:'#7c3aab' };
@@ -725,32 +747,61 @@ function switchScreen(name) {
   if (name === 'stats') updateStats();
 }
 
-// ── Filter ─────────────────────────────────────
-function setFilter(f, screen) {
+// ── 2D Filter helpers ──────────────────────────
+function applyFilter2D(status, pos) {
+  let pool = VOCAB;
+  if (status === 'Known')   pool = pool.filter(v => known.has(v.word+v.pos));
+  if (status === 'Unknown') pool = pool.filter(v => unknownSet.has(v.word+v.pos));
+  if (pos !== 'All')        pool = pool.filter(v => v.pos === pos);
+  return pool;
+}
+
+function chipClass(val) {
+  const m = { All:'active-all', Known:'active-known', Unknown:'active-unknown',
+              Noun:'active-noun', Verb:'active-verb', Adjective:'active-adj', Adverb:'active-adv' };
+  return m[val] || 'active-all';
+}
+
+function refreshChips(rowId, val) {
+  document.querySelectorAll(`#${rowId} .chip`).forEach(c => {
+    c.className = 'chip' + (c.dataset.val === val ? ' ' + chipClass(val) : '');
+  });
+}
+
+function setStatus(val, screen) {
   if (screen === 'fc') {
-    filter = f;
-    document.querySelectorAll('#fc-filter-row .chip').forEach(c => {
-      c.className = 'chip' + (c.dataset.pos === f ? ' ' + chipClass(f) : '');
-    });
+    fcStatus = val;
+    refreshChips('fc-status-row', val);
     buildDeck();
-  } else if (screen === 'q') {
-    filter = f;
+  } else if (screen === 'l') {
+    lStatus = val;
+    refreshChips('l-status-row', val);
+    renderList();
+  }
+}
+
+function setPos(val, screen) {
+  if (screen === 'fc') {
+    fcPos = val;
+    refreshChips('fc-pos-row', val);
+    buildDeck();
+  } else if (screen === 'l') {
+    lPos = val;
+    refreshChips('l-pos-row', val);
+    renderList();
+  }
+}
+
+// legacy setFilter used by quiz screen
+function setFilter(f, screen) {
+  if (screen === 'q') {
+    qFilter = f;
     document.querySelectorAll('#q-filter-row .chip').forEach(c => {
       c.className = 'chip' + (c.dataset.pos === f ? ' ' + chipClass(f) : '');
     });
     document.getElementById('quiz-filter-label').textContent = f === 'All' ? 'ทั้งหมด' : f;
     qScore=0; qTotal=0; newQuiz();
-  } else if (screen === 'l') {
-    lFilter = f;
-    document.querySelectorAll('#l-filter-row .chip').forEach(c => {
-      c.className = 'chip' + (c.dataset.pos === f ? ' ' + chipClass(f) : '');
-    });
-    renderList();
   }
-}
-function chipClass(f) {
-  const m = {All:'active-all',Noun:'active-noun',Verb:'active-verb',Adjective:'active-adj',Adverb:'active-adv',Known:'active-known',Unknown:'active-unknown'};
-  return m[f]||'active-all';
 }
 
 function filteredVocab(f) {
@@ -762,14 +813,38 @@ function filteredVocab(f) {
 
 // ── Flashcard ──────────────────────────────────
 function buildDeck() {
-  deck = [...filteredVocab(filter)];
+  deck = [...applyFilter2D(fcStatus, fcPos)];
   currentIndex = 0;
   updateCard(); updateProgress();
   document.getElementById('deck-count').textContent = deck.length + ' คำ';
 }
 
 function updateCard() {
-  if (!deck.length) return;
+  const emptyEl = document.getElementById('card-empty');
+  const cardScene = document.querySelector('.card-scene');
+  const cardActions = document.querySelectorAll('.card-actions');
+
+  if (!deck.length) {
+    cardScene.style.display = 'none';
+    cardActions.forEach(a => a.style.visibility = 'hidden');
+    if (!emptyEl) {
+      const el = document.createElement('div');
+      el.id = 'card-empty';
+      el.style.cssText = 'text-align:center;padding:40px 20px;color:var(--text-light);font-family:var(--font-th);font-size:.9rem;line-height:1.7';
+      el.innerHTML = '<div style="font-size:2rem;margin-bottom:10px">—</div>ไม่มีคำในกลุ่มที่เลือก<br>กรุณาเปลี่ยน filter';
+      document.getElementById('card-stack').appendChild(el);
+    }
+    document.getElementById('prog-text').textContent = '0 / 0';
+    document.getElementById('deck-count').textContent = '0 คำ';
+    document.getElementById('prog-fill').style.width = '0%';
+    return;
+  }
+
+  // restore if was empty
+  cardScene.style.display = '';
+  cardActions.forEach(a => a.style.visibility = '');
+  if (emptyEl) emptyEl.remove();
+
   const v = deck[currentIndex];
   const tc = getTagClass(v.pos);
   ['fc-pos','fc-pos-b'].forEach(id => {
@@ -823,11 +898,20 @@ function markCard(status) {
   if (status==='known') { known.add(key); unknownSet.delete(key); burst(); }
   else { unknownSet.add(key); known.delete(key); }
   saveProgress(); updateHeader();
+
   const box = document.getElementById('card-box');
-  box.classList.add(status==='known'?'swipe-right':'swipe-left');
+  box.classList.add(status==='known' ? 'swipe-right' : 'swipe-left');
   setTimeout(() => {
     box.classList.remove('swipe-left','swipe-right');
-    nextCard();
+    // If filter is status-based, rebuild deck so just-marked card exits the pool
+    if (fcStatus === 'Known' || fcStatus === 'Unknown') {
+      deck = [...applyFilter2D(fcStatus, fcPos)];
+      if (currentIndex >= deck.length) currentIndex = Math.max(0, deck.length - 1);
+      updateCard(); updateProgress();
+      document.getElementById('deck-count').textContent = deck.length + ' คำ';
+    } else {
+      nextCard();
+    }
   }, 340);
 }
 
@@ -877,18 +961,29 @@ cardBox.addEventListener('touchend', e => {
 
 // ── Quiz ───────────────────────────────────────
 function newQuiz() {
-  const pool = filteredVocab(filter).length >= 4 ? filteredVocab(filter) : VOCAB;
-  if (pool.length < 4) return;
+  qWord = null;
   qAnswered = false;
-  document.getElementById('quiz-next-btn').style.display='none';
+  document.getElementById('quiz-next-btn').style.display = 'none';
   document.getElementById('quiz-fb').className = 'quiz-fb';
+  document.getElementById('quiz-options').innerHTML = '';
 
-  const idx = Math.floor(Math.random()*pool.length);
+  const base = filteredVocab(qFilter);
+  const pool = base.length >= 4 ? base : VOCAB;
+  if (pool.length < 4) {
+    document.getElementById('quiz-options').innerHTML =
+      '<div style="text-align:center;padding:30px;color:var(--text-light);font-family:var(--font-th)">คำในกลุ่มนี้มีน้อยเกินไป กรุณาเลือกกลุ่มอื่น</div>';
+    return;
+  }
+
+  const idx = Math.floor(Math.random() * pool.length);
   qWord = pool[idx];
   const used = new Set([idx]);
   const wrong = [];
-  while(wrong.length<3) { const ri=Math.floor(Math.random()*pool.length); if(!used.has(ri)){used.add(ri);wrong.push(pool[ri]);} }
-  const opts = [qWord,...wrong].sort(()=>Math.random()-.5);
+  while (wrong.length < 3) {
+    const ri = Math.floor(Math.random() * pool.length);
+    if (!used.has(ri)) { used.add(ri); wrong.push(pool[ri]); }
+  }
+  const opts = [qWord, ...wrong].sort(() => Math.random() - .5);
 
   const posEl = document.getElementById('q-pos');
   posEl.textContent = qWord.pos;
@@ -896,7 +991,6 @@ function newQuiz() {
   document.getElementById('q-word').textContent = qWord.word;
 
   const cont = document.getElementById('quiz-options');
-  cont.innerHTML = '';
   opts.forEach(opt => {
     const btn = document.createElement('button');
     btn.className = 'quiz-opt';
@@ -907,7 +1001,7 @@ function newQuiz() {
 }
 
 function answerQuiz(chosen, btn) {
-  if (qAnswered) return;
+  if (!qWord || qAnswered) return;
   qAnswered = true; qTotal++;
   const correct = chosen.word===qWord.word && chosen.pos===qWord.pos;
   if(correct){qScore++;btn.classList.add('correct');burst();}
@@ -927,8 +1021,8 @@ function nextQuiz(){ newQuiz(); }
 // ── List ───────────────────────────────────────
 function renderList() {
   const q = document.getElementById('search-input').value.toLowerCase();
-  let pool = filteredVocab(lFilter);
-  if(q) pool = pool.filter(v=>v.word.toLowerCase().includes(q)||v.definition.includes(q)||v.synonym.toLowerCase().includes(q));
+  let pool = applyFilter2D(lStatus, lPos);
+  if (q) pool = pool.filter(v => v.word.toLowerCase().includes(q) || v.definition.includes(q) || v.synonym.toLowerCase().includes(q));
   document.getElementById('list-count-sub').textContent = pool.length + ' คำ';
   const cont = document.getElementById('word-list');
   if(!pool.length){cont.innerHTML='<div style="text-align:center;padding:40px;color:var(--text-light);font-family:var(--font-th)">ไม่พบคำที่ค้นหา</div>';return;}
@@ -989,10 +1083,16 @@ function updateStats() {
 }
 
 // ── Utils ──────────────────────────────────────
+let _toastTimer = null;
 function showToast(msg) {
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2400);
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  if (_toastTimer) clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => {
+    t.classList.remove('show');
+    _toastTimer = null;
+  }, 2200);
 }
 function burst() {
   const colors=['#2563eb','#16a34a','#1c1b18','#b85c1a','#7c3aab'];
