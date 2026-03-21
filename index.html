@@ -802,15 +802,20 @@ const IPA_DICT = {"ability": "/əˈbɪlɪti/", "access": "/ˈæksɛs/", "accommo
 // ── localStorage ───────────────────────────────
 const LS_KEY = 'vocab_progress_v1';
 let known = new Set(), unknownSet = new Set();
+let _savedWordKey = null;
 
 function saveProgress() {
-  try { localStorage.setItem(LS_KEY, JSON.stringify({ known:[...known], unknown:[...unknownSet] })); } catch(e){}
+  try {
+    const curKey = deck[currentIndex] ? deck[currentIndex].word + deck[currentIndex].pos : null;
+    localStorage.setItem(LS_KEY, JSON.stringify({ known:[...known], unknown:[...unknownSet], currentWordKey: curKey }));
+  } catch(e){}
 }
 function loadProgress() {
   try {
     const d = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
     if(d.known) d.known.forEach(k=>known.add(k));
     if(d.unknown) d.unknown.forEach(k=>unknownSet.add(k));
+    if(d.currentWordKey) _savedWordKey = d.currentWordKey;
   } catch(e){}
 }
 function clearProgress() {
@@ -1014,11 +1019,11 @@ function syncCardHeight() {
 }
 
 function nextCard() {
-  if (currentIndex < deck.length-1) { currentIndex++; updateCard(); updateProgress(); }
+  if (currentIndex < deck.length-1) { currentIndex++; updateCard(); updateProgress(); saveProgress(); }
   else showToast('เล่นครบทุกคำแล้ว');
 }
 function prevCard() {
-  if (currentIndex > 0) { currentIndex--; updateCard(); updateProgress(); }
+  if (currentIndex > 0) { currentIndex--; updateCard(); updateProgress(); saveProgress(); }
 }
 
 function markCard(status) {
@@ -1358,6 +1363,11 @@ try {
 } catch(_) {}
 loadProgress();
 buildDeck();
+if (_savedWordKey) {
+  const idx = deck.findIndex(v => v.word + v.pos === _savedWordKey);
+  if (idx > 0) { currentIndex = idx; updateCard(); updateProgress(); }
+  _savedWordKey = null;
+}
 newQuiz();
 renderList();
 updateStats();
