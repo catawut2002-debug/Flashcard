@@ -188,6 +188,7 @@ html, body {
 .chip.active-verb  { background: rgba(26,122,80,.15); color: var(--verb); border-color: var(--verb); }
 .chip.active-adj   { background: rgba(184,92,26,.15); color: var(--adj); border-color: var(--adj); }
 .chip.active-adv   { background: rgba(124,58,171,.15); color: var(--adv); border-color: var(--adv); }
+.chip.active-unread { background: var(--accent); color: #fff; border-color: var(--accent); }
 .chip.active-known { background: rgba(22,163,74,.15); color: var(--success); border-color: var(--success); }
 .chip.active-unknown { background: rgba(220,38,38,.15); color: var(--danger); border-color: var(--danger); }
 
@@ -428,6 +429,23 @@ html, body {
 .quiz-fb.correct { background: rgba(22,163,74,.08); color: var(--success); border: 1px solid rgba(22,163,74,.2); }
 .quiz-fb.wrong   { background: rgba(220,38,38,.08); color: var(--danger); border: 1px solid rgba(220,38,38,.2); }
 .quiz-btns { display: flex; gap: 10px; padding: 0 20px 16px; }
+.quiz-mode-row { display: flex; gap: 8px; padding: 10px 20px 0; }
+.quiz-listen-btn {
+  display: flex; align-items: center; justify-content: center;
+  width: 88px; height: 88px; border-radius: 50%;
+  background: var(--accent); color: #fff; border: none;
+  cursor: pointer; margin: 14px auto 6px;
+  box-shadow: 0 6px 28px rgba(0,0,0,.18);
+  transition: transform .15s, opacity .15s;
+  flex-shrink: 0;
+}
+.quiz-listen-btn:active { transform: scale(.86); }
+.quiz-listen-btn.speaking { animation: listen-pulse 1.1s ease-in-out infinite; }
+@keyframes listen-pulse {
+  0%,100% { transform: scale(1); box-shadow: 0 6px 28px rgba(0,0,0,.18); }
+  50%      { transform: scale(1.07); box-shadow: 0 8px 36px rgba(0,0,0,.26), 0 0 0 12px rgba(0,0,0,.06); }
+}
+.quiz-word-reveal { font-family: var(--font-display); font-size: clamp(1.4rem,6vw,2rem); color: var(--text-light); margin-top: 6px; min-height: 1.4em; }
 
 /* ══ SCREEN 3: LIST ════════════════════════════ */
 #screen-list { background: var(--bg); }
@@ -570,7 +588,7 @@ html, body {
   </div>
 
   <div class="filter-row" id="fc-status-row">
-    <button class="chip active-all" data-val="All" onclick="setStatus('All','fc')">ทั้งหมด</button>
+    <button class="chip active-unread" data-val="Unread" onclick="setStatus('Unread','fc')">Unread</button>
     <button class="chip" data-val="Known" onclick="setStatus('Known','fc')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>รู้แล้ว
     </button>
@@ -579,8 +597,7 @@ html, body {
     </button>
   </div>
   <div class="filter-row" id="fc-pos-row" style="padding-top:0">
-    <button class="chip active-all" data-val="All" onclick="setPos('All','fc')">ทุกประเภท</button>
-    <button class="chip" data-val="Noun" onclick="setPos('Noun','fc')">Noun</button>
+    <button class="chip active-noun" data-val="Noun" onclick="setPos('Noun','fc')">Noun</button>
     <button class="chip" data-val="Verb" onclick="setPos('Verb','fc')">Verb</button>
     <button class="chip" data-val="Adjective" onclick="setPos('Adjective','fc')">Adjective</button>
     <button class="chip" data-val="Adverb" onclick="setPos('Adverb','fc')">Adverb</button>
@@ -676,23 +693,23 @@ html, body {
       <div class="screen-title">Quiz</div>
       <div class="screen-sub" id="quiz-score-sub">คะแนน: 0 / 0</div>
     </div>
-    <div class="progress-pill" id="quiz-filter-label">ทั้งหมด</div>
   </div>
-  <div class="filter-row" id="q-filter-row">
-    <button class="chip active-all" data-pos="All" onclick="setFilter('All','q')">ทั้งหมด</button>
-    <button class="chip" data-pos="Noun" onclick="setFilter('Noun','q')">Noun</button>
-    <button class="chip" data-pos="Verb" onclick="setFilter('Verb','q')">Verb</button>
-    <button class="chip" data-pos="Adjective" onclick="setFilter('Adjective','q')">Adjective</button>
-    <button class="chip" data-pos="Adverb" onclick="setFilter('Adverb','q')">Adverb</button>
-    <button class="chip" data-pos="Unknown" onclick="setFilter('Unknown','q')">
-      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>ยังไม่รู้
+  <div class="quiz-mode-row">
+    <button class="chip active-all" id="qmode-text" onclick="setQMode('text')">ข้อความ</button>
+    <button class="chip" id="qmode-listen" onclick="setQMode('listen')">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>
+      ฟังเสียง
     </button>
   </div>
   <div class="quiz-body">
     <div class="quiz-card">
       <span class="card-pos-tag" id="q-pos" style="margin-bottom:8px;align-self:flex-start;display:inline-block">Noun</span>
       <div class="quiz-word" id="q-word">Ability</div>
-      <div class="quiz-hint">ความหมายของคำนี้คืออะไร?</div>
+      <button class="quiz-listen-btn" id="q-listen-btn" style="display:none" onclick="speakQuizWord(this)">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3z"/><path d="M3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+      </button>
+      <div class="quiz-word-reveal" id="q-word-reveal"></div>
+      <div class="quiz-hint" id="q-hint">ความหมายของคำนี้คืออะไร?</div>
     </div>
     <div class="quiz-options" id="quiz-options"></div>
     <div class="quiz-fb" id="quiz-fb"></div>
@@ -717,8 +734,7 @@ html, body {
     </div>
   </div>
   <div class="filter-row" id="l-status-row">
-    <button class="chip active-all" data-val="All" onclick="setStatus('All','l')">ทั้งหมด</button>
-    <button class="chip" data-val="Known" onclick="setStatus('Known','l')">
+    <button class="chip active-known" data-val="Known" onclick="setStatus('Known','l')">
       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>รู้แล้ว
     </button>
     <button class="chip" data-val="Unknown" onclick="setStatus('Unknown','l')">
@@ -726,8 +742,7 @@ html, body {
     </button>
   </div>
   <div class="filter-row" id="l-pos-row" style="padding-top:0">
-    <button class="chip active-all" data-val="All" onclick="setPos('All','l')">ทุกประเภท</button>
-    <button class="chip" data-val="Noun" onclick="setPos('Noun','l')">Noun</button>
+    <button class="chip active-noun" data-val="Noun" onclick="setPos('Noun','l')">Noun</button>
     <button class="chip" data-val="Verb" onclick="setPos('Verb','l')">Verb</button>
     <button class="chip" data-val="Adjective" onclick="setPos('Adjective','l')">Adjective</button>
     <button class="chip" data-val="Adverb" onclick="setPos('Adverb','l')">Adverb</button>
@@ -802,12 +817,14 @@ const IPA_DICT = {"ability": "/əˈbɪlɪti/", "access": "/ˈæksɛs/", "accommo
 // ── localStorage ───────────────────────────────
 const LS_KEY = 'vocab_progress_v1';
 let known = new Set(), unknownSet = new Set();
-let _savedWordKey = null;
+const POS_TYPES = ['Noun','Verb','Adjective','Adverb'];
+let _navKeys = { Noun: null, Verb: null, Adjective: null, Adverb: null };
 
 function saveProgress() {
   try {
-    const curKey = deck[currentIndex] ? deck[currentIndex].word + deck[currentIndex].pos : null;
-    localStorage.setItem(LS_KEY, JSON.stringify({ known:[...known], unknown:[...unknownSet], currentWordKey: curKey }));
+    const cur = deck[currentIndex];
+    if (cur && POS_TYPES.includes(fcPos)) _navKeys[fcPos] = cur.word + cur.pos;
+    localStorage.setItem(LS_KEY, JSON.stringify({ known:[...known], unknown:[...unknownSet], navKeys: _navKeys, currentPos: fcPos }));
   } catch(e){}
 }
 function loadProgress() {
@@ -815,11 +832,13 @@ function loadProgress() {
     const d = JSON.parse(localStorage.getItem(LS_KEY)||'{}');
     if(d.known) d.known.forEach(k=>known.add(k));
     if(d.unknown) d.unknown.forEach(k=>unknownSet.add(k));
-    if(d.currentWordKey) _savedWordKey = d.currentWordKey;
+    if(d.navKeys) POS_TYPES.forEach(p=>{ if(d.navKeys[p]) _navKeys[p]=d.navKeys[p]; });
+    if(d.currentPos && POS_TYPES.includes(d.currentPos)) fcPos = d.currentPos;
   } catch(e){}
 }
 function clearProgress() {
   known.clear(); unknownSet.clear();
+  POS_TYPES.forEach(p=>{ _navKeys[p]=null; });
   try { localStorage.removeItem(LS_KEY); } catch(e){}
   updateStats(); updateHeader(); buildDeck(); updateCard(); updateProgress();
   showToast('ล้างความคืบหน้าแล้ว');
@@ -828,10 +847,10 @@ function clearProgress() {
 // ── State ──────────────────────────────────────
 let deck = [...VOCAB], currentIndex = 0, isFlipped = false;
 
-// 2D filter: status (All/Known/Unknown) × pos (All/Noun/Verb/Adjective/Adverb)
-let fcStatus = 'All', fcPos = 'All';
-let lStatus  = 'All', lPos  = 'All';
-let qScore = 0, qTotal = 0, qWord = null, qAnswered = false, qFilter = 'All';
+// 2D filter: status (All/Known/Unknown) × pos (Noun/Verb/Adjective/Adverb)
+let fcStatus = 'Unread', fcPos = 'Noun';
+let lStatus  = 'Known', lPos  = 'Noun';
+let qScore = 0, qTotal = 0, qWord = null, qAnswered = false, qFilter = 'Unknown';
 let currentScreen = 'card';
 
 const POS_COLORS = { Noun:'#1d6fb5', Verb:'#1a7a50', Adjective:'#b85c1a', Adverb:'#7c3aab' };
@@ -842,6 +861,7 @@ function getTagClass(pos) {
 
 // ── Screen switching ───────────────────────────
 function switchScreen(name) {
+  if (currentScreen === 'card') saveProgress();
   currentScreen = name;
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById('screen-'+name).classList.add('active');
@@ -855,6 +875,7 @@ function switchScreen(name) {
 // ── 2D Filter helpers ──────────────────────────
 function applyFilter2D(status, pos) {
   let pool = VOCAB;
+  if (status === 'Unread')  pool = pool.filter(v => !known.has(v.word+v.pos) && !unknownSet.has(v.word+v.pos));
   if (status === 'Known')   pool = pool.filter(v => known.has(v.word+v.pos));
   if (status === 'Unknown') pool = pool.filter(v => unknownSet.has(v.word+v.pos));
   if (pos !== 'All')        pool = pool.filter(v => v.pos === pos);
@@ -862,7 +883,7 @@ function applyFilter2D(status, pos) {
 }
 
 function chipClass(val) {
-  const m = { All:'active-all', Known:'active-known', Unknown:'active-unknown',
+  const m = { Unread:'active-unread', All:'active-all', Known:'active-known', Unknown:'active-unknown',
               Noun:'active-noun', Verb:'active-verb', Adjective:'active-adj', Adverb:'active-adv' };
   return m[val] || 'active-all';
 }
@@ -918,8 +939,14 @@ function filteredVocab(f) {
 
 // ── Flashcard ──────────────────────────────────
 function buildDeck() {
+  const prevKey = _navKeys[fcPos] || (deck[currentIndex] ? deck[currentIndex].word + deck[currentIndex].pos : null);
   deck = [...applyFilter2D(fcStatus, fcPos)];
-  currentIndex = 0;
+  if (prevKey) {
+    const idx = deck.findIndex(v => v.word + v.pos === prevKey);
+    currentIndex = idx >= 0 ? idx : 0;
+  } else {
+    currentIndex = 0;
+  }
   updateCard(); updateProgress();
   document.getElementById('deck-count').textContent = deck.length + ' คำ';
 }
@@ -1019,11 +1046,11 @@ function syncCardHeight() {
 }
 
 function nextCard() {
-  if (currentIndex < deck.length-1) { currentIndex++; updateCard(); updateProgress(); saveProgress(); }
+  if (currentIndex < deck.length-1) { currentIndex++; _navKeys[fcPos] = deck[currentIndex].word+deck[currentIndex].pos; updateCard(); updateProgress(); saveProgress(); }
   else showToast('เล่นครบทุกคำแล้ว');
 }
 function prevCard() {
-  if (currentIndex > 0) { currentIndex--; updateCard(); updateProgress(); saveProgress(); }
+  if (currentIndex > 0) { currentIndex--; _navKeys[fcPos] = deck[currentIndex].word+deck[currentIndex].pos; updateCard(); updateProgress(); saveProgress(); }
 }
 
 function markCard(status) {
@@ -1038,9 +1065,10 @@ function markCard(status) {
   setTimeout(() => {
     box.classList.remove('swipe-left','swipe-right');
     // If filter is status-based, rebuild deck so just-marked card exits the pool
-    if (fcStatus === 'Known' || fcStatus === 'Unknown') {
+    if (fcStatus === 'Known' || fcStatus === 'Unknown' || fcStatus === 'Unread') {
       deck = [...applyFilter2D(fcStatus, fcPos)];
       if (currentIndex >= deck.length) currentIndex = Math.max(0, deck.length - 1);
+      if (deck[currentIndex]) _navKeys[fcPos] = deck[currentIndex].word+deck[currentIndex].pos;
       updateCard(); updateProgress();
       document.getElementById('deck-count').textContent = deck.length + ' คำ';
     } else {
@@ -1094,12 +1122,29 @@ cardBox.addEventListener('touchend', e => {
 }, { passive: true });
 
 // ── Quiz ───────────────────────────────────────
+let qMode = 'text';
+
+function setQMode(mode) {
+  qMode = mode;
+  document.getElementById('qmode-text').className   = 'chip' + (mode==='text'   ? ' active-all' : '');
+  document.getElementById('qmode-listen').className = 'chip' + (mode==='listen' ? ' active-all' : '');
+  qScore=0; qTotal=0; newQuiz();
+}
+
+function speakQuizWord(btn) {
+  if (!qWord) return;
+  if (btn) btn.classList.add('speaking');
+  speakText(qWord.word, null);
+  if (btn) setTimeout(() => btn.classList.remove('speaking'), 1200);
+}
+
 function newQuiz() {
   qWord = null;
   qAnswered = false;
   document.getElementById('quiz-next-btn').style.display = 'none';
   document.getElementById('quiz-fb').className = 'quiz-fb';
   document.getElementById('quiz-options').innerHTML = '';
+  document.getElementById('q-word-reveal').textContent = '';
 
   const base = filteredVocab(qFilter);
   const pool = base.length >= 4 ? base : VOCAB;
@@ -1122,7 +1167,19 @@ function newQuiz() {
   const posEl = document.getElementById('q-pos');
   posEl.textContent = qWord.pos;
   posEl.className = 'card-pos-tag ' + getTagClass(qWord.pos);
-  document.getElementById('q-word').textContent = qWord.word;
+
+  const wordEl  = document.getElementById('q-word');
+  const listenBtn = document.getElementById('q-listen-btn');
+  if (qMode === 'listen') {
+    wordEl.style.display = 'none';
+    listenBtn.style.display = 'flex';
+    // auto-play after short delay
+    setTimeout(() => speakQuizWord(listenBtn), 300);
+  } else {
+    wordEl.style.display = '';
+    wordEl.textContent = qWord.word;
+    listenBtn.style.display = 'none';
+  }
 
   const cont = document.getElementById('quiz-options');
   opts.forEach(opt => {
@@ -1144,6 +1201,10 @@ function answerQuiz(chosen, btn) {
     b.classList.add('disabled');
     if(b.textContent===qWord.definition) b.classList.add('correct');
   });
+  // In listen mode reveal the word after answering
+  if (qMode === 'listen') {
+    document.getElementById('q-word-reveal').textContent = qWord.word;
+  }
   document.getElementById('quiz-score-sub').textContent = `คะแนน: ${qScore} / ${qTotal}`;
   const fb = document.getElementById('quiz-fb');
   fb.className = 'quiz-fb show ' + (correct?'correct':'wrong');
@@ -1248,19 +1309,20 @@ function loadVoices() {
   if (!all.length) return;
   voicesLoaded = true;
   const en = all.filter(v => v.lang.startsWith('en'));
-  // Heuristic: names containing 'male','man','david','mark','alex','fred','daniel' → male
-  // names containing 'female','woman','samantha','victoria','karen','zira','susan','fiona' → female
+  // Prefer neural/online/premium voices — they sound far more natural
+  const quality = /neural|online|natural|enhanced|premium|google/i;
+  const sorted = [...en].sort((a, b) => (quality.test(b.name) ? 1 : 0) - (quality.test(a.name) ? 1 : 0));
   const maleHints   = /male|man|david|mark|alex|fred|daniel|arthur|aaron|ryan|james/i;
   const femaleHints = /female|woman|samantha|victoria|karen|zira|susan|fiona|kate|siri|moira|tessa|veena|allison|ava/i;
-  voicesMale   = en.filter(v => maleHints.test(v.name));
-  voicesFemale = en.filter(v => femaleHints.test(v.name));
+  voicesMale   = sorted.filter(v => maleHints.test(v.name));
+  voicesFemale = sorted.filter(v => femaleHints.test(v.name));
   // fallback: split remaining by index
   if (!voicesMale.length && !voicesFemale.length) {
-    voicesMale   = en.filter((_, i) => i % 2 === 0);
-    voicesFemale = en.filter((_, i) => i % 2 === 1);
+    voicesMale   = sorted.filter((_, i) => i % 2 === 0);
+    voicesFemale = sorted.filter((_, i) => i % 2 === 1);
   }
-  if (!voicesMale.length)   voicesMale   = en.slice(0, 1);
-  if (!voicesFemale.length) voicesFemale = en.slice(-1);
+  if (!voicesMale.length)   voicesMale   = sorted.slice(0, 1);
+  if (!voicesFemale.length) voicesFemale = sorted.slice(-1);
 }
 
 if (window.speechSynthesis) {
@@ -1286,8 +1348,9 @@ function speakText(text, e) {
 
   const utt = new SpeechSynthesisUtterance(text.trim());
   utt.lang = 'en-US';
-  utt.rate = 0.82;
-  utt.pitch = voiceGender === 'female' ? 1.1 : 0.9;
+  utt.rate = 0.84;
+  utt.pitch = voiceGender === 'female' ? 1.02 : 0.97;
+  utt.volume = 1;
   const pool = voiceGender === 'female' ? voicesFemale : voicesMale;
   if (pool.length) utt.voice = pool[0];
 
@@ -1310,7 +1373,7 @@ function speakWord(e) {
 
   const utt = new SpeechSynthesisUtterance(word);
   utt.lang = 'en-US';
-  utt.rate = 0.85;
+  utt.rate = 0.77;
   utt.pitch = voiceGender === 'female' ? 1.1 : 0.9;
 
   const pool = voiceGender === 'female' ? voicesFemale : voicesMale;
@@ -1362,12 +1425,9 @@ try {
   }
 } catch(_) {}
 loadProgress();
+refreshChips('fc-status-row', fcStatus);
+refreshChips('fc-pos-row', fcPos);
 buildDeck();
-if (_savedWordKey) {
-  const idx = deck.findIndex(v => v.word + v.pos === _savedWordKey);
-  if (idx > 0) { currentIndex = idx; updateCard(); updateProgress(); }
-  _savedWordKey = null;
-}
 newQuiz();
 renderList();
 updateStats();
